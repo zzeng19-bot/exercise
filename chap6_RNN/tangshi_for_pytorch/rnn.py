@@ -49,6 +49,12 @@ class RNN_model(nn.Module):
 
 
         ##########################################
+        self.rnn_lstm = nn.LSTM(
+            input_size=self.word_embedding_dim,
+            hidden_size=self.lstm_dim,
+            num_layers=2,
+            batch_first=True
+        )
         self.fc = nn.Linear(lstm_hidden_dim, vocab_len )
         self.apply(weights_init) # call the weights initial function.
 
@@ -66,6 +72,11 @@ class RNN_model(nn.Module):
 
 
         ################################################
+        num_layers = 2
+        batch_size = batch_input.size(0)  # should be 1 as we reshaped above
+        h0 = Variable(torch.zeros(num_layers, batch_size, self.lstm_dim))
+        c0 = Variable(torch.zeros(num_layers, batch_size, self.lstm_dim))
+        output, (hn, cn) = self.rnn_lstm(batch_input, (h0, c0))
         out = output.contiguous().view(-1,self.lstm_dim)
 
         out =  F.relu(self.fc(out))
